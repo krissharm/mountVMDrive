@@ -1,0 +1,27 @@
+
+0
+down vote
+You can mount partitions from .vdi images using qemu-nbd:
+
+sudo apt install qemu-utils
+sudo modprobe nbd
+
+vdi="/path/to/your.vdi"  # <<== Edit this
+
+sudo qemu-nbd -c /dev/nbd0 "$vdi"
+
+# view partitions and select the one you want to mount.
+# Using parted here, but you can also use cfdisk, fdisk, etc.
+
+sudo parted /dev/nbd0 print
+part=nbd0p2 # <<== partition you want to mount
+
+sudo mkdir /mnt/vdi
+sudo mount /dev/$part /mnt/vdi
+Some users seem to need to add a parameter to the modprobe command. I didn't with Ubuntu 16.04, but if it doesn't work for you, try adding max_part=16 :
+
+sudo modprobe nbd max_part=16
+When done:
+
+sudo umount /dev/$part
+sudo qemu-nbd --disconnect /dev/nbd0
